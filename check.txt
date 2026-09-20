@@ -1,0 +1,76 @@
+ Đã tiếp tục hoàn thiện và kiểm chứng mock pipeline end-to-end.
+
+  ### Kết quả chính
+
+  - Mock E2E tạo thành công MP4 thực bằng FFmpeg.
+  - Video: H.264, AAC, 1080×1920, 30 fps, 33.334 giây, 636,060 bytes.
+  - Character Profile và Style Preset đã tích hợp vào scene/image generation.
+  - Hỗ trợ gán lại asset, force-regenerate TTS, chỉnh sửa SRT.
+  - Background music và SFX đã được đưa vào FFmpeg với fade, attenuation và limiter.
+  - Video Library có list, preview, download và guarded delete.
+  - YouTube OAuth/metadata flow được sửa; real provider vẫn NOT_CONFIGURED.
+  - Backup 287 KB đã restore an toàn vào database regression riêng:
+      - 26 collections
+      - 10 lessons
+      - 8 videos
+      - 37 assets
+
+  - Không xóa database, MongoDB volume hoặc storage hiện tại.
+
+  ### Bugs đã sửa
+
+  - Cache collision giữa model/provider/settings.
+  - Regenerate image/TTS vẫn dùng asset cũ.
+  - Absolute video path khiến download/delete thất bại.
+  - Upload document không lưu đúng lifecycle lỗi.
+  - Thiếu Mock OCR được đánh dấu rõ.
+  - Metadata YouTube nhập từ UI không được gửi tới provider.
+  - OAuth callback ghi channel thừa và làm mất expiry thật.
+  - Music/SFX chưa được truyền từ UI/API tới FFmpeg.
+  - Subtitle chưa thể chỉnh trực tiếp tại Video Studio.
+
+  ### Kiểm tra
+
+  - Typecheck: PASS
+  - Lint: PASS, không warning
+  - Tests: PASS, 23/23
+  - Build: PASS, 43 pages
+  - Dependency audit: PASS, 0 vulnerabilities
+  - Docker development build/runtime: PASS
+  - Production Compose config/build: PASS
+  - FFmpeg/ffprobe: PASS
+  - Mock E2E: PASS
+  - Batch ba bài học pause/resume/cancel: PASS
+  - Backup/restore database riêng: PASS
+
+  Web container mới đã được deploy. Kiểm tra nội bộ /login → /dashboard/help → logout đều trả về thành công. Codex shell không truy cập được hostname OrbStack trong lần kiểm tra cuối, được ghi là
+  ENVIRONMENT LIMITATION, không phải lỗi ứng dụng.
+
+  ### E2E artifact
+
+  - Lesson ID: 6a9ff2d45f96365d865962cd
+  - Script ID: 6a9ff2d45f96365d865962f3
+  - Video ID: 6a9ff2d49be2633f330d7d8d
+  - Render Job ID: 6a9ff2d45f96365d86596406
+  - MP4: /app/storage/videos/render-6a9ff2d49be2633f330d7d8d-6a9ff2d45f96365d86596406.mp4
+
+  ### Tài liệu
+
+  - docs/IMPLEMENTATION_REPORT.md
+  - docs/feature-matrix.md
+  - docs/USER_GUIDE.md
+  - docs/QUICK_START.md
+  - PROJECT_STATUS.md
+  - Interactive Help: /dashboard/help
+
+  ### Production readiness
+
+  NOT READY
+
+  Các blocker còn lại:
+
+  - OpenAI LLM/Image/TTS thật chưa có credentials để kiểm chứng.
+  - Google OAuth/upload/analytics thật chưa cấu hình.
+  - Chưa chạy browser automation cho toàn bộ form, responsive và React console.
+  - Chưa chạy ba video hoàn chỉnh qua cả hai approval gate.
+  - Cần người thật kiểm tra phát âm, nội dung, subtitle và mức âm thanh trước khi publish.

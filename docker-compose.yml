@@ -1,0 +1,65 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --username $$MONGO_INITDB_ROOT_USERNAME --password $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 }).ok' | grep 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  mongo-express:
+    image: mongo-express:1.0.2
+    restart: unless-stopped
+    depends_on: { mongodb: { condition: service_healthy } }
+    ports: ["8081:8081"]
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_ROOT_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_ROOT_PASSWORD}
+  web:
+    build: { context: ., dockerfile: Dockerfile }
+    restart: unless-stopped
+    depends_on: { mongodb: { condition: service_healthy } }
+    ports: ["3000:3000"]
+    env_file: .env
+    environment:
+      INTERNAL_APP_URL: http://web:3000
+    volumes: ["./storage:/app/storage"]
+  tts:
+    build: { context: ., dockerfile: docker/tts/Dockerfile }
+    restart: unless-stopped
+    environment:
+      STORAGE_ROOT: /app/storage
+      HF_HOME: /app/model-cache
+      HF_HUB_DISABLE_XET: "1"
+      HF_HUB_DOWNLOAD_TIMEOUT: "60"
+      HF_HUB_OFFLINE: ${VIENEU_OFFLINE:-0}
+      VIENEU_CONCURRENCY: ${VIENEU_CONCURRENCY:-1}
+    volumes: ["./storage:/app/storage", "vieneu-model-cache:/app/model-cache"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 15m
+  worker:
+    build: { context: ., dockerfile: Dockerfile.worker }
+    restart: unless-stopped
+    depends_on: { mongodb: { condition: service_healthy }, tts: { condition: service_started } }
+    env_file: .env
+    environment:
+      TTS_PROVIDER: ${TTS_PROVIDER:-mock}
+      VIENEU_TTS_URL: http://tts:8000
+    volumes: ["./storage:/app/storage"]
+volumes:
+  vieneu-model-cache:
+  mongo_data:

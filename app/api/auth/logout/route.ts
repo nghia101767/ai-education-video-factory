@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { cookies } from "next/headers"; import { authCookieName, clearSessionCookie, destroySession } from "@/lib/auth"; import { requestUsesHttps } from "@/lib/auth-request";
+export async function POST(request: Request) { await destroySession((await cookies()).get(authCookieName)?.value); const response = NextResponse.json({ loggedOut: true }); response.headers.set("Set-Cookie", clearSessionCookie(requestUsesHttps(request))); return response; }

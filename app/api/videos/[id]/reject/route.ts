@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { connectToDatabase } from "@/lib/mongodb"; import { Video } from "@/models";
+export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) { await connectToDatabase(); const video = await Video.findOneAndUpdate({ _id: (await params).id, status: "ready_for_review" }, { status: "rejected" }, { new: true }).lean(); return video ? NextResponse.json(video) : NextResponse.json({ error: "Only a video ready for review can be rejected" }, { status: 409 }); }

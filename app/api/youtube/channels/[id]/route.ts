@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { connectToDatabase } from "@/lib/mongodb"; import { YouTubeChannel } from "@/models";
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) { await connectToDatabase(); const channel = await YouTubeChannel.findByIdAndUpdate((await params).id, { status: "disconnected" }, { new: true }).select("-accessToken -refreshToken").lean(); return channel ? NextResponse.json(channel) : NextResponse.json({ error: "Channel not found" }, { status: 404 }); }

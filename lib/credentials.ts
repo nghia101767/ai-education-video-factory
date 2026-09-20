@@ -1,0 +1,4 @@
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+const key = () => createHash("sha256").update(process.env.YOUTUBE_CREDENTIAL_KEY || "local-development-only-change-me").digest();
+export function encryptCredential(value: string) { const iv = randomBytes(12); const cipher = createCipheriv("aes-256-gcm", key(), iv); const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]); return `${iv.toString("hex")}:${cipher.getAuthTag().toString("hex")}:${encrypted.toString("hex")}`; }
+export function decryptCredential(value: string) { const [iv, tag, encrypted] = value.split(":"); const decipher = createDecipheriv("aes-256-gcm", key(), Buffer.from(iv, "hex")); decipher.setAuthTag(Buffer.from(tag, "hex")); return Buffer.concat([decipher.update(Buffer.from(encrypted, "hex")), decipher.final()]).toString("utf8"); }

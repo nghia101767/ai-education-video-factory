@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { connectToDatabase } from "@/lib/mongodb"; import { Script } from "@/models";
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) { try { const { id } = await params; await connectToDatabase(); return NextResponse.json(await Script.find({ lessonId: id }).sort({ version: -1 }).lean()); } catch { return NextResponse.json({ error: "Unable to load scripts" }, { status: 500 }); } }

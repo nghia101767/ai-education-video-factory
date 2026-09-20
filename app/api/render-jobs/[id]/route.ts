@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { connectToDatabase } from "@/lib/mongodb"; import { RenderJob } from "@/models";
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) { await connectToDatabase(); const job = await RenderJob.findById((await params).id).lean(); return job ? NextResponse.json(job) : NextResponse.json({ error: "Render job not found" }, { status: 404 }); }

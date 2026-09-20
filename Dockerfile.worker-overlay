@@ -1,0 +1,24 @@
+FROM ai-education-video-factory-worker:runtime-base
+WORKDIR /app
+COPY app ./app
+COPY lib ./lib
+COPY models ./models
+COPY repositories ./repositories
+COPY scripts ./scripts
+COPY types ./types
+COPY workers ./workers
+COPY tsconfig.json package.json ./
+COPY node_modules/@xmldom ./node_modules/@xmldom
+COPY node_modules/argparse ./node_modules/argparse
+COPY node_modules/base64-js ./node_modules/base64-js
+COPY node_modules/bluebird ./node_modules/bluebird
+COPY node_modules/dingbat-to-unicode ./node_modules/dingbat-to-unicode
+COPY node_modules/jszip ./node_modules/jszip
+COPY node_modules/lop ./node_modules/lop
+COPY node_modules/mammoth ./node_modules/mammoth
+COPY node_modules/node-ensure ./node_modules/node-ensure
+COPY node_modules/path-is-absolute ./node_modules/path-is-absolute
+COPY node_modules/pdf-parse ./node_modules/pdf-parse
+COPY node_modules/underscore ./node_modules/underscore
+COPY node_modules/xmlbuilder ./node_modules/xmlbuilder
+CMD ["node", "--import", "tsx", "workers/render-worker.ts"]

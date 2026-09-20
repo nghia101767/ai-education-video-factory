@@ -1,0 +1,1 @@
+export const logger = { info: (message: string, data?: unknown) => console.log(`[info] ${message}`, data ?? ""), error: (message: string, error?: unknown) => console.error(`[error] ${message}`, error ?? "") };

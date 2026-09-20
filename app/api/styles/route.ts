@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import { StylePreset } from "@/models";
+const clean = (value: unknown, max = 1000) => typeof value === "string" ? value.trim().slice(0, max) : "";
+export async function GET() { await connectToDatabase(); return NextResponse.json(await StylePreset.find().sort({ createdAt: -1 }).limit(100).lean()); }
+export async function POST(request: Request) { try { const body = await request.json(); const name = clean(body.name, 120); if (!name) return NextResponse.json({ error: "Style name is required" }, { status: 400 }); const aspectRatio = ["9:16","16:9","1:1"].includes(body.aspectRatio) ? body.aspectRatio : "9:16"; await connectToDatabase(); return NextResponse.json(await StylePreset.create({ name, description: clean(body.description), visualPromptPrefix: clean(body.visualPromptPrefix), negativePrompt: clean(body.negativePrompt), aspectRatio, typography: clean(body.typography, 300), subtitleStyle: clean(body.subtitleStyle, 300), status: body.status === "archived" ? "archived" : "active" }), { status: 201 }); } catch (error) { return NextResponse.json({ error: error instanceof Error && error.message.includes("duplicate") ? "A style with this name already exists" : "Unable to create style" }, { status: 400 }); } }
